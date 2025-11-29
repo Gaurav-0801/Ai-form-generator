@@ -30,19 +30,31 @@ const UserSchema = new Schema(
   }
 );
 
-// Ensure model is only created once
-let UserModel: mongoose.Model<IUser>;
+// Lazy initialization - only create model when accessed (not during build time)
+// This prevents build-time evaluation issues with mongoose Document scope
+let _userModel: mongoose.Model<IUser> | null = null;
 
-try {
-  if (mongoose.models && mongoose.models.User) {
-    UserModel = mongoose.models.User as mongoose.Model<IUser>;
-  } else {
-    UserModel = mongoose.model<IUser>('User', UserSchema);
+function getUserModel(): mongoose.Model<IUser> {
+  if (_userModel) {
+    return _userModel;
   }
-} catch (error) {
-  // Fallback for build-time evaluation issues
-  UserModel = mongoose.model<IUser>('User', UserSchema);
+  if (mongoose.models && mongoose.models.User) {
+    _userModel = mongoose.models.User as mongoose.Model<IUser>;
+    return _userModel;
+  }
+  _userModel = mongoose.model<IUser>('User', UserSchema);
+  return _userModel;
 }
 
-export default UserModel;
+// Export a Proxy that lazily creates the model on first access
+export default new Proxy({} as mongoose.Model<IUser>, {
+  get(_target, prop) {
+    const model = getUserModel();
+    const value = (model as any)[prop];
+    if (typeof value === 'function') {
+      return value.bind(model);
+    }
+    return value;
+  }
+});
 

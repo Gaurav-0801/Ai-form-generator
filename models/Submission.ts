@@ -43,19 +43,31 @@ const SubmissionSchema = new Schema(
 
 SubmissionSchema.index({ formId: 1, submittedAt: -1 });
 
-// Ensure model is only created once
-let SubmissionModel: mongoose.Model<ISubmission>;
+// Lazy initialization - only create model when accessed (not during build time)
+// This prevents build-time evaluation issues with mongoose Document scope
+let _submissionModel: mongoose.Model<ISubmission> | null = null;
 
-try {
-  if (mongoose.models && mongoose.models.Submission) {
-    SubmissionModel = mongoose.models.Submission as mongoose.Model<ISubmission>;
-  } else {
-    SubmissionModel = mongoose.model<ISubmission>('Submission', SubmissionSchema);
+function getSubmissionModel(): mongoose.Model<ISubmission> {
+  if (_submissionModel) {
+    return _submissionModel;
   }
-} catch (error) {
-  // Fallback for build-time evaluation issues
-  SubmissionModel = mongoose.model<ISubmission>('Submission', SubmissionSchema);
+  if (mongoose.models && mongoose.models.Submission) {
+    _submissionModel = mongoose.models.Submission as mongoose.Model<ISubmission>;
+    return _submissionModel;
+  }
+  _submissionModel = mongoose.model<ISubmission>('Submission', SubmissionSchema);
+  return _submissionModel;
 }
 
-export default SubmissionModel;
+// Export a Proxy that lazily creates the model on first access
+export default new Proxy({} as mongoose.Model<ISubmission>, {
+  get(_target, prop) {
+    const model = getSubmissionModel();
+    const value = (model as any)[prop];
+    if (typeof value === 'function') {
+      return value.bind(model);
+    }
+    return value;
+  }
+});
 

@@ -71,19 +71,31 @@ const FormSchemaDefinition = new Schema(
 FormSchemaDefinition.index({ userId: 1 });
 // Note: Vector search index for 'embedding' field should be created in MongoDB Atlas, not here
 
-// Ensure model is only created once
-let FormModel: mongoose.Model<IForm>;
+// Lazy initialization - only create model when accessed (not during build time)
+// This prevents build-time evaluation issues with mongoose Document scope
+let _formModel: mongoose.Model<IForm> | null = null;
 
-try {
-  if (mongoose.models && mongoose.models.Form) {
-    FormModel = mongoose.models.Form as mongoose.Model<IForm>;
-  } else {
-    FormModel = mongoose.model<IForm>('Form', FormSchemaDefinition);
+function getFormModel(): mongoose.Model<IForm> {
+  if (_formModel) {
+    return _formModel;
   }
-} catch (error) {
-  // Fallback for build-time evaluation issues
-  FormModel = mongoose.model<IForm>('Form', FormSchemaDefinition);
+  if (mongoose.models && mongoose.models.Form) {
+    _formModel = mongoose.models.Form as mongoose.Model<IForm>;
+    return _formModel;
+  }
+  _formModel = mongoose.model<IForm>('Form', FormSchemaDefinition);
+  return _formModel;
 }
 
-export default FormModel;
+// Export a Proxy that lazily creates the model on first access
+export default new Proxy({} as mongoose.Model<IForm>, {
+  get(_target, prop) {
+    const model = getFormModel();
+    const value = (model as any)[prop];
+    if (typeof value === 'function') {
+      return value.bind(model);
+    }
+    return value;
+  }
+});
 

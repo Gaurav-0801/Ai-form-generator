@@ -127,3 +127,4 @@ function cosineSimilarity(vecA: number[], vecB: number[]): number {
   return denominator === 0 ? 0 : dotProduct / denominator;
 }
 
+
