@@ -59,7 +59,8 @@ export async function retrieveRelevantForms(
     }));
   } catch (error) {
     // Fallback to cosine similarity if vector search is not available
-    console.warn('Vector search not available, using cosine similarity fallback');
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.warn('Vector search not available, using cosine similarity fallback:', errorMessage);
     return await retrieveRelevantFormsFallback(userId, queryEmbedding, topK);
   }
 }

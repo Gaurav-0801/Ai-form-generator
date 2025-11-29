@@ -23,28 +23,43 @@ if (!global.mongoose) {
 }
 
 async function connectDB() {
-  if (cached.conn) {
+  // If already connected, return immediately
+  if (cached.conn && mongoose.connection.readyState === 1) {
     return cached.conn;
   }
 
-  if (!cached.promise) {
-    const opts = {
-      bufferCommands: false,
-    };
-
-    cached.promise = mongoose.connect(MONGODB_URI!, opts).then((mongoose) => {
-      return mongoose;
-    });
+  // If connection is in progress, wait for it
+  if (cached.promise) {
+    try {
+      cached.conn = await cached.promise;
+      return cached.conn;
+    } catch (e) {
+      cached.promise = null;
+      throw e;
+    }
   }
+
+  // Start new connection
+  const opts = {
+    bufferCommands: false,
+    serverSelectionTimeoutMS: 10000, // 10 seconds timeout
+    socketTimeoutMS: 45000, // 45 seconds socket timeout
+  };
+
+  cached.promise = mongoose.connect(MONGODB_URI!, opts).then((mongoose) => {
+    return mongoose;
+  }).catch((error) => {
+    cached.promise = null;
+    throw error;
+  });
 
   try {
     cached.conn = await cached.promise;
+    return cached.conn;
   } catch (e) {
     cached.promise = null;
     throw e;
   }
-
-  return cached.conn;
 }
 
 export default connectDB;
