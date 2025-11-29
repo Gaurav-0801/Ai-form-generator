@@ -29,5 +29,14 @@ const UserSchema = new Schema<IUser>(
   }
 );
 
-export default mongoose.models.User || mongoose.model<IUser>('User', UserSchema);
+// Ensure model is only created once
+let UserModel: mongoose.Model<IUser>;
+
+if (mongoose.models.User) {
+  UserModel = mongoose.models.User;
+} else {
+  UserModel = mongoose.model<IUser>('User', UserSchema);
+}
+
+export default UserModel;
 

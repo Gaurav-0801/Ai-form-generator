@@ -7,11 +7,11 @@ import mongoose from 'mongoose';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
-    const formId = params.id;
+    const { id: formId } = await params;
 
     // Check if form exists (public access for viewing)
     const form = await Form.findById(formId);
@@ -41,7 +41,7 @@ export async function GET(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const authResult = await requireAuth(request);
@@ -51,7 +51,7 @@ export async function DELETE(
     const { userId } = authResult;
 
     await connectDB();
-    const formId = params.id;
+    const { id: formId } = await params;
 
     // Verify ownership
     const form = await Form.findOne({

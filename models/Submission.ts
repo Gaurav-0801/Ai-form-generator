@@ -42,5 +42,14 @@ const SubmissionSchema = new Schema<ISubmission>(
 
 SubmissionSchema.index({ formId: 1, submittedAt: -1 });
 
-export default mongoose.models.Submission || mongoose.model<ISubmission>('Submission', SubmissionSchema);
+// Ensure model is only created once
+let SubmissionModel: mongoose.Model<ISubmission>;
+
+if (mongoose.models.Submission) {
+  SubmissionModel = mongoose.models.Submission;
+} else {
+  SubmissionModel = mongoose.model<ISubmission>('Submission', SubmissionSchema);
+}
+
+export default SubmissionModel;
 

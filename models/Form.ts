@@ -33,7 +33,6 @@ const FormSchemaDefinition = new Schema<IForm>(
       type: Schema.Types.ObjectId,
       ref: 'User',
       required: true,
-      index: true,
     },
     schema: {
       title: { type: String, required: true },
@@ -67,9 +66,18 @@ const FormSchemaDefinition = new Schema<IForm>(
   }
 );
 
-// Create index for vector search (MongoDB Atlas Vector Search)
+// Create index for userId
 FormSchemaDefinition.index({ userId: 1 });
-FormSchemaDefinition.index({ embedding: '2dsphere' });
+// Note: Vector search index for 'embedding' field should be created in MongoDB Atlas, not here
 
-export default mongoose.models.Form || mongoose.model<IForm>('Form', FormSchemaDefinition);
+// Ensure model is only created once
+let FormModel: mongoose.Model<IForm>;
+
+if (mongoose.models.Form) {
+  FormModel = mongoose.models.Form;
+} else {
+  FormModel = mongoose.model<IForm>('Form', FormSchemaDefinition);
+}
+
+export default FormModel;
 
