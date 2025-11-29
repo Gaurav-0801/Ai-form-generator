@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Agent Search</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #1e1e2e 0%, #2d1b4e 100%);
+      color: #e0e0e0;
+      padding: 16px;
+      width: 500px;
+      min-height: 300px;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .header {
+      text-align: center;
+      border-bottom: 2px solid #6366f1;
+      padding-bottom: 12px;
+    }
+
+    .header h1 {
+      font-size: 18px;
+      font-weight: 600;
+      background: linear-gradient(135deg, #6366f1, #ec4899);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .search-section {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .search-section label {
+      font-size: 12px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #a0a0b0;
+    }
+
+    input[type="text"] {
+      padding: 10px 12px;
+      border: 1px solid #404060;
+      border-radius: 6px;
+      background: #2a2a3e;
+      color: #e0e0e0;
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+
+    input[type="text"]:focus {
+      outline: none;
+      border-color: #6366f1;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+      background: #32324d;
+    }
+
+    input[type="text"]::placeholder {
+      color: #606080;
+    }
+
+    button {
+      padding: 10px 16px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .loading {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #a0a0b0;
+      font-size: 12px;
+    }
+
+    .spinner {
+      width: 14px;
+      height: 14px;
+      border: 2px solid #404060;
+      border-top-color: #6366f1;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .result-section {
+      display: none;
+      flex-direction: column;
+      gap: 12px;
+      padding: 12px;
+      background: #2a2a3e;
+      border-radius: 6px;
+      border-left: 3px solid #6366f1;
+    }
+
+    .result-section.show {
+      display: flex;
+    }
+
+    .result-item {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .result-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #8b5cf6;
+    }
+
+    .result-value {
+      font-size: 13px;
+      color: #e0e0e0;
+      word-break: break-word;
+      line-height: 1.4;
+      padding: 8px;
+      background: #1e1e2e;
+      border-radius: 4px;
+      border-left: 2px solid #6366f1;
+    }
+
+    .score {
+      display: inline-block;
+      padding: 2px 8px;
+      background: #6366f1;
+      border-radius: 3px;
+      font-weight: 600;
+      font-size: 12px;
+    }
+
+    .source {
+      display: inline-block;
+      padding: 2px 8px;
+      background: #ec4899;
+      border-radius: 3px;
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    .planner-decision {
+      display: inline-block;
+      padding: 2px 8px;
+      background: #10b981;
+      border-radius: 3px;
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    .trace-toggle {
+      padding: 8px 12px;
+      background: transparent;
+      border: 1px solid #404060;
+      color: #a0a0b0;
+      border-radius: 4px;
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .trace-toggle:hover {
+      background: #32324d;
+      border-color: #6366f1;
+    }
+
+    .trace-panel {
+      display: none;
+      flex-direction: column;
+      gap: 8px;
+      padding: 10px;
+      background: #1e1e2e;
+      border-radius: 4px;
+      max-height: 300px;
+      overflow-y: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      color: #a0a0b0;
+      border: 1px solid #404060;
+    }
+
+    .trace-panel.show {
+      display: flex;
+    }
+
+    .trace-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding: 6px;
+      background: #2a2a3e;
+      border-radius: 3px;
+      border-left: 2px solid #8b5cf6;
+    }
+
+    .trace-label {
+      font-weight: 600;
+      color: #6366f1;
+    }
+
+    .trace-value {
+      color: #e0e0e0;
+      word-break: break-all;
+    }
+
+    .error {
+      padding: 12px;
+      background: #7f1d1d;
+      border-left: 3px solid #dc2626;
+      border-radius: 4px;
+      color: #fecaca;
+      font-size: 13px;
+    }
+
+    .success {
+      padding: 12px;
+      background: #064e3b;
+      border-left: 3px solid #10b981;
+      border-radius: 4px;
+      color: #d1fae5;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>AI Agent Search</h1>
+    </div>
+
+    <div class="search-section">
+      <label for="queryInput">Enter Search Query</label>
+      <input 
+        type="text" 
+        id="queryInput" 
+        placeholder="e.g., machine learning algorithms..."
+        autocomplete="off"
+      >
+      <button id="searchBtn">Search</button>
+    </div>
+
+    <div id="status"></div>
+
+    <div id="result" class="result-section">
+      <div class="result-item">
+        <span class="result-label">Planner Decision</span>
+        <span id="plannerDecision" class="planner-decision"></span>
+      </div>
+
+      <div class="result-item">
+        <span class="result-label">Best Match</span>
+        <div class="result-value" id="bestMatch"></div>
+      </div>
+
+      <div class="result-item">
+        <span class="result-label">Score</span>
+        <span id="scoreDisplay" class="score"></span>
+      </div>
+
+      <div class="result-item">
+        <span class="result-label">Source</span>
+        <span id="sourceDisplay" class="source"></span>
+      </div>
+
+      <button class="trace-toggle" id="traceToggle">Show Trace</button>
+
+      <div id="tracePanel" class="trace-panel">
+        <div id="traceContent"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

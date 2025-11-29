@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "AI Agent Reasoning Extension",
+  "version": "1.0.0",
+  "description": "Chrome extension with semantic + keyword search using AI reasoning planner",
+  "permissions": ["runtime"],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "AI Agent Search"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "host_permissions": []
+}
