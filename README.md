@@ -26,7 +26,7 @@ A full-stack web application that allows users to generate dynamic, shareable fo
 
 ### Prerequisites
 
-- Node.js 18+ and npm/pnpm
+- Node.js 18+ and npm
 - MongoDB Atlas account (free tier works)
 - OpenAI API key
 - Cloudinary account (free tier works)
@@ -42,8 +42,6 @@ A full-stack web application that allows users to generate dynamic, shareable fo
 2. **Install dependencies**
    ```bash
    npm install
-   # or
-   pnpm install
    ```
 
 3. **Set up environment variables**
@@ -92,8 +90,6 @@ A full-stack web application that allows users to generate dynamic, shareable fo
 5. **Run the development server**
    ```bash
    npm run dev
-   # or
-   pnpm dev
    ```
 
 6. **Open your browser**
@@ -361,5 +357,6 @@ For issues or questions:
 **Ready to generate forms!** 🎉
 
 Start by creating an account and generating your first AI-powered form.
-#   A i - f o r m - g e n e r a t o r  
+#   A i - f o r m - g e n e r a t o r 
+ 
  
