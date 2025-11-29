@@ -18,10 +18,22 @@ export async function retrieveRelevantForms(
   userPrompt: string,
   topK: number = 10
 ): Promise<RetrievedForm[]> {
-  await connectDB();
+  try {
+    console.log('[Memory Retrieval] Starting retrieval for user:', userId);
+    await connectDB();
+    console.log('[Memory Retrieval] Database connected');
 
-  // Generate embedding for user prompt
-  const queryEmbedding = await generateEmbedding(userPrompt);
+    // Generate embedding for user prompt
+    console.log('[Memory Retrieval] Generating query embedding...');
+    let queryEmbedding;
+    try {
+      queryEmbedding = await generateEmbedding(userPrompt);
+      console.log('[Memory Retrieval] Query embedding generated');
+    } catch (embedError) {
+      const embedErrorMessage = embedError instanceof Error ? embedError.message : 'Unknown error';
+      console.error('[Memory Retrieval] Query embedding failed:', embedErrorMessage);
+      throw new Error(`Failed to generate query embedding: ${embedErrorMessage}`);
+    }
 
   // For MongoDB Atlas Vector Search, we need to use aggregation pipeline
   // Note: This requires MongoDB Atlas with vector search index configured
@@ -60,8 +72,19 @@ export async function retrieveRelevantForms(
   } catch (error) {
     // Fallback to cosine similarity if vector search is not available
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    console.warn('Vector search not available, using cosine similarity fallback:', errorMessage);
-    return await retrieveRelevantFormsFallback(userId, queryEmbedding, topK);
+    console.warn('[Memory Retrieval] Vector search not available, using cosine similarity fallback:', errorMessage);
+    try {
+      return await retrieveRelevantFormsFallback(userId, queryEmbedding, topK);
+    } catch (fallbackError) {
+      const fallbackErrorMessage = fallbackError instanceof Error ? fallbackError.message : 'Unknown error';
+      console.error('[Memory Retrieval] Fallback also failed:', fallbackErrorMessage);
+      throw new Error(`Memory retrieval failed: ${fallbackErrorMessage}`);
+    }
+  }
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('[Memory Retrieval] Error in retrieveRelevantForms:', errorMessage);
+    throw error;
   }
 }
 
