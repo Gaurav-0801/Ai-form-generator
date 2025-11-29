@@ -1,7 +1,8 @@
 import bcrypt from 'bcryptjs';
 import { SignJWT, jwtVerify } from 'jose';
+import { config } from './config';
 
-const secret = new TextEncoder().encode(process.env.NEXTAUTH_SECRET || 'fallback-secret-key-change-in-production');
+const secret = new TextEncoder().encode(config.auth.secret);
 
 export async function hashPassword(password: string): Promise<string> {
   return bcrypt.hash(password, 12);

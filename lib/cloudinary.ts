@@ -1,9 +1,10 @@
 import { v2 as cloudinary } from 'cloudinary';
+import { config } from './config';
 
 cloudinary.config({
-  cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
+  cloud_name: config.cloudinary.cloudName,
+  api_key: config.cloudinary.apiKey,
+  api_secret: config.cloudinary.apiSecret,
 });
 
 export async function uploadImage(file: File | Blob): Promise<string> {
@@ -16,6 +17,7 @@ export async function uploadImage(file: File | Blob): Promise<string> {
         {
           resource_type: 'image',
           folder: 'form-uploads',
+          upload_preset: config.cloudinary.uploadPreset,
         },
         (error, result) => {
           if (error) {
@@ -38,6 +40,7 @@ export async function uploadImageFromBase64(base64: string): Promise<string> {
       {
         resource_type: 'image',
         folder: 'form-uploads',
+        upload_preset: config.cloudinary.uploadPreset,
       },
       (error, result) => {
         if (error) {

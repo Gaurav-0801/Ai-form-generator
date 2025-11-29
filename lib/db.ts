@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
+import { config } from './config';
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://gauravpantind:root@cluster0.qdoexiw.mongodb.net/ai-form-generator?retryWrites=true&w=majority';
+const MONGODB_URI = config.mongodb.uri;
 
 if (!MONGODB_URI) {
   throw new Error('Please define the MONGODB_URI environment variable inside .env.local');

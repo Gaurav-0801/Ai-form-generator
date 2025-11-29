@@ -1,14 +1,16 @@
 import OpenAI from 'openai';
+import { config } from './config';
 
 let openaiInstance: OpenAI | null = null;
 
 function getOpenAI(): OpenAI {
   if (!openaiInstance) {
-    if (!process.env.OPENAI_API_KEY) {
+    if (!config.openai.apiKey) {
       throw new Error('OPENAI_API_KEY is not set in environment variables');
     }
     openaiInstance = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
+      apiKey: config.openai.apiKey,
+      baseURL: config.openai.apiUrl,
     });
   }
   return openaiInstance;
