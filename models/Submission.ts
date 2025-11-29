@@ -1,4 +1,5 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
+import type { Document } from 'mongoose';
 
 export interface ISubmission extends Document {
   formId: mongoose.Types.ObjectId;
@@ -8,7 +9,7 @@ export interface ISubmission extends Document {
   submittedAt: Date;
 }
 
-const SubmissionSchema = new Schema<ISubmission>(
+const SubmissionSchema = new Schema(
   {
     formId: {
       type: Schema.Types.ObjectId,
@@ -45,9 +46,14 @@ SubmissionSchema.index({ formId: 1, submittedAt: -1 });
 // Ensure model is only created once
 let SubmissionModel: mongoose.Model<ISubmission>;
 
-if (mongoose.models.Submission) {
-  SubmissionModel = mongoose.models.Submission;
-} else {
+try {
+  if (mongoose.models && mongoose.models.Submission) {
+    SubmissionModel = mongoose.models.Submission as mongoose.Model<ISubmission>;
+  } else {
+    SubmissionModel = mongoose.model<ISubmission>('Submission', SubmissionSchema);
+  }
+} catch (error) {
+  // Fallback for build-time evaluation issues
   SubmissionModel = mongoose.model<ISubmission>('Submission', SubmissionSchema);
 }
 

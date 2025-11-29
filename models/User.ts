@@ -1,4 +1,5 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
+import type { Document } from 'mongoose';
 
 export interface IUser extends Document {
   email: string;
@@ -6,7 +7,7 @@ export interface IUser extends Document {
   createdAt: Date;
 }
 
-const UserSchema = new Schema<IUser>(
+const UserSchema = new Schema(
   {
     email: {
       type: String,
@@ -32,9 +33,14 @@ const UserSchema = new Schema<IUser>(
 // Ensure model is only created once
 let UserModel: mongoose.Model<IUser>;
 
-if (mongoose.models.User) {
-  UserModel = mongoose.models.User;
-} else {
+try {
+  if (mongoose.models && mongoose.models.User) {
+    UserModel = mongoose.models.User as mongoose.Model<IUser>;
+  } else {
+    UserModel = mongoose.model<IUser>('User', UserSchema);
+  }
+} catch (error) {
+  // Fallback for build-time evaluation issues
   UserModel = mongoose.model<IUser>('User', UserSchema);
 }
 

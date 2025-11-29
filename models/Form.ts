@@ -1,4 +1,5 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
+import type { Document } from 'mongoose';
 
 export interface FormField {
   id: string;
@@ -27,7 +28,7 @@ export interface IForm extends Document {
   updatedAt: Date;
 }
 
-const FormSchemaDefinition = new Schema<IForm>(
+const FormSchemaDefinition = new Schema(
   {
     userId: {
       type: Schema.Types.ObjectId,
@@ -73,9 +74,14 @@ FormSchemaDefinition.index({ userId: 1 });
 // Ensure model is only created once
 let FormModel: mongoose.Model<IForm>;
 
-if (mongoose.models.Form) {
-  FormModel = mongoose.models.Form;
-} else {
+try {
+  if (mongoose.models && mongoose.models.Form) {
+    FormModel = mongoose.models.Form as mongoose.Model<IForm>;
+  } else {
+    FormModel = mongoose.model<IForm>('Form', FormSchemaDefinition);
+  }
+} catch (error) {
+  // Fallback for build-time evaluation issues
   FormModel = mongoose.model<IForm>('Form', FormSchemaDefinition);
 }
 
