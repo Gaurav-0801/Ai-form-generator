@@ -6,7 +6,7 @@
 export const config = {
   // OpenAI Configuration
   openai: {
-    apiKey: process.env.OPENAI_API_KEY || 'sk-proj-cgrlpAg9bTSWEojCdNr8AsJCGecUX7UDv4zE3EyRUET_Lmcquq7M42rCjOmmTxwQTTZ-eNmTXFT3B1bkFJCKXBUjBGtxcVQDotvuWOWOY7d9w0X2AmbkrnZrmY0zq5KHP6k_5xaPfkq3Bz0lEsLxD_0Ik8A',
+    apiKey: process.env.OPENAI_API_KEY || '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',
     apiUrl: process.env.OPENAI_API_URL || 'https://api.openai.com/v1',
   },
 

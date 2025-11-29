@@ -74,6 +74,18 @@ async function retrieveRelevantFormsFallback(
   topK: number
 ): Promise<RetrievedForm[]> {
   await connectDB();
+  
+  // Ensure connection is actually ready (state 1 = connected)
+  // Wait a bit if not connected yet
+  let retries = 0;
+  while (mongoose.connection.readyState !== 1 && retries < 10) {
+    await new Promise(resolve => setTimeout(resolve, 50));
+    retries++;
+  }
+  
+  if (mongoose.connection.readyState !== 1) {
+    throw new Error('MongoDB connection is not ready');
+  }
 
   // Get all forms for the user that have embeddings
   const allForms = await Form.find({

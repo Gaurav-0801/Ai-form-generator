@@ -1,6 +1,10 @@
 import mongoose, { Schema } from 'mongoose';
 import type { Document } from 'mongoose';
 
+// Import User model first to ensure it's initialized before Form
+// This helps with model reference initialization order
+import './User';
+
 export interface FormField {
   id: string;
   type: 'text' | 'email' | 'number' | 'file' | 'textarea' | 'select' | 'checkbox' | 'radio';
@@ -36,26 +40,8 @@ const FormSchemaDefinition = new Schema(
       required: true,
     },
     schema: {
-      title: { type: String, required: true },
-      description: { type: String },
-      fields: [
-        {
-          id: { type: String, required: true },
-          type: {
-            type: String,
-            enum: ['text', 'email', 'number', 'file', 'textarea', 'select', 'checkbox', 'radio'],
-            required: true,
-          },
-          label: { type: String, required: true },
-          required: { type: Boolean, default: false },
-          validation: {
-            min: Number,
-            max: Number,
-            pattern: String,
-          },
-          options: [String],
-        },
-      ],
+      type: Schema.Types.Mixed,
+      required: true,
     },
     embedding: {
       type: [Number],
@@ -88,7 +74,11 @@ function getFormModel(): mongoose.Model<IForm> {
 }
 
 // Export a Proxy that lazily creates the model on first access
-export default new Proxy({} as mongoose.Model<IForm>, {
+export default new Proxy(function FormConstructor(...args: any[]) {
+  // Handle constructor call: new Form({...})
+  const model = getFormModel();
+  return new (model as any)(...args);
+} as any as mongoose.Model<IForm>, {
   get(_target, prop) {
     const model = getFormModel();
     const value = (model as any)[prop];
@@ -96,6 +86,11 @@ export default new Proxy({} as mongoose.Model<IForm>, {
       return value.bind(model);
     }
     return value;
+  },
+  // Handle 'new' operator
+  construct(_target, args) {
+    const model = getFormModel();
+    return new (model as any)(...args);
   }
 });
 
