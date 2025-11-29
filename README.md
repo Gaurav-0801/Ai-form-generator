@@ -357,6 +357,4 @@ For issues or questions:
 **Ready to generate forms!** 🎉
 
 Start by creating an account and generating your first AI-powered form.
-#   A i - f o r m - g e n e r a t o r 
- 
- 
+#
